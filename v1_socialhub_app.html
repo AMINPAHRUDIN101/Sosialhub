@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialHub Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .post-card { transition: transform 0.2s; }
+        .post-card:hover { transform: translateY(-2px); }
+        .hidden-section { display: none; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Auth Overlay (Simulasi Login) -->
+    <div id="auth-overlay" class="fixed inset-0 z-[100] bg-white flex items-center justify-center px-6">
+        <div class="max-w-md w-full text-center space-y-8">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-xl shadow-blue-200">S</div>
+            <div>
+                <h1 class="text-3xl font-bold">Selamat Datang</h1>
+                <p class="text-slate-500 mt-2">Masuk ke SocialHub untuk terhubung dengan teman.</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="username-input" placeholder="Nama Pengguna" class="w-full px-6 py-4 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 outline-none transition-all">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                    Mulai Menjelajah
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Dengan masuk, Anda menyetujui Ketentuan Layanan kami.</p>
+        </div>
+    </div>
+
+    <!-- Main App Layout -->
+    <div id="app-content" class="hidden-section">
+        <!-- Top Navigation -->
+        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+            <div class="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+                <span class="text-2xl font-black text-blue-600 tracking-tight">SocialHub</span>
+                <div class="flex items-center gap-4">
+                    <button class="text-xl text-slate-600"><i class="far fa-bell"></i></button>
+                    <div id="user-avatar" class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-sm"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Feed Section -->
+        <main class="max-w-2xl mx-auto p-4 space-y-6 pb-24">
+            
+            <!-- Create Post -->
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex gap-4">
+                    <div id="post-avatar" class="w-12 h-12 rounded-full flex-shrink-0 bg-blue-100 flex items-center justify-center text-blue-600 font-bold"></div>
+                    <textarea id="post-content" placeholder="Apa yang sedang terjadi?" class="w-full py-2 bg-transparent border-none focus:ring-0 resize-none text-lg outline-none"></textarea>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <div class="flex gap-4 text-blue-600 text-xl">
+                        <button class="hover:bg-blue-50 p-2 rounded-full"><i class="far fa-image"></i></button>
+                        <button class="hover:bg-blue-50 p-2 rounded-full"><i class="far fa-smile"></i></button>
+                    </div>
+                    <button onclick="createPost()" class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition-all">
+                        Posting
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feed Container -->
+            <div id="feed-container" class="space-y-6">
+                <!-- Posts will appear here -->
+            </div>
+        </main>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 py-4 px-8 flex justify-between items-center z-50">
+            <button class="text-2xl text-blue-600"><i class="fas fa-home"></i></button>
+            <button class="text-2xl text-slate-400"><i class="fas fa-search"></i></button>
+            <button class="text-2xl text-slate-400"><i class="far fa-plus-square"></i></button>
+            <button class="text-2xl text-slate-400"><i class="far fa-user"></i></button>
+        </nav>
+    </div>
+
+    <script>
+        let currentUser = "";
+        const posts = [
+            {
+                user: "Budi Santoso",
+                content: "Baru saja bergabung dengan SocialHub! Antarmukanya sangat bersih dan cepat. 🚀",
+                likes: 12,
+                time: "2 jam yang lalu"
+            },
+            {
+                user: "Siti Aminah",
+                content: "Ada yang tahu tempat kopi enak di Jakarta Selatan? Lagi pengen banget nih. ☕️",
+                likes: 5,
+                time: "4 jam yang lalu"
+            }
+        ];
+
+        function handleLogin() {
+            const input = document.getElementById('username-input');
+            if (input.value.trim() === "") {
+                alert("Masukkan nama Anda!");
+                return;
+            }
+            currentUser = input.value;
+            document.getElementById('auth-overlay').classList.add('hidden-section');
+            document.getElementById('app-content').classList.remove('hidden-section');
+            
+            const initial = currentUser.charAt(0).toUpperCase();
+            document.getElementById('user-avatar').innerText = initial;
+            document.getElementById('post-avatar').innerText = initial;
+            
+            renderPosts();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = "";
+            
+            posts.forEach((post, index) => {
+                const postHTML = `
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 post-card">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+                                    ${post.user.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">${post.user}</h4>
+                                    <p class="text-xs text-slate-400">${post.time}</p>
+                                </div>
+                            </div>
+                            <button class="text-slate-400"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+                        <p class="text-slate-700 leading-relaxed mb-4">${post.content}</p>
+                        <div class="flex gap-6 border-t border-slate-50 pt-4">
+                            <button onclick="likePost(${index})" class="flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors">
+                                <i class="far fa-heart"></i>
+                                <span class="text-sm font-medium">${post.likes}</span>
+                            </button>
+                            <button class="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors">
+                                <i class="far fa-comment"></i>
+                                <span class="text-sm font-medium">Komentar</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += postHTML;
+            });
+        }
+
+        function createPost() {
+            const content = document.getElementById('post-content');
+            if (content.value.trim() === "") return;
+
+            const newPost = {
+                user: currentUser,
+                content: content.value,
+                likes: 0,
+                time: "Baru saja"
+            };
+
+            posts.unshift(newPost);
+            content.value = "";
+            renderPosts();
+        }
+
+        function likePost(index) {
+            posts[index].likes++;
+            renderPosts();
+        }
+    </script>
+</body>
+</html>
