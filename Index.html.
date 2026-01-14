@@ -1,0 +1,772 @@
+# Copilot Chat Conversation Export: SocialHub app with enhanced features
+
+**User:** @AMINPAHRUDIN101
+**Thread URL:** https://github.com/copilot/c/8a0b6a15-2406-491d-a957-98f20f70f9e9
+
+## @AMINPAHRUDIN101
+
+@socialhub_app.html
+
+## Copilot
+
+``` name=socialhub_app.html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialHub Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .post-card { transition: transform 0.2s; }
+        .post-card:hover { transform: translateY(-2px); }
+        .hidden-section { display: none; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Auth Overlay (Simulasi Login) -->
+    <div id="auth-overlay" class="fixed inset-0 z-[100] bg-white flex items-center justify-center px-6">
+        <div class="max-w-md w-full text-center space-y-8">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-xl shadow-blue-200">S</div>
+            <div>
+                <h1 class="text-3xl font-bold">Selamat Datang</h1>
+                <p class="text-slate-500 mt-2">Masuk ke SocialHub untuk terhubung dengan teman.</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="username-input" placeholder="Nama Pengguna" class="w-full px-6 py-4 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 outline-none transition-all">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                    Mulai Menjelajah
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Dengan masuk, Anda menyetujui Ketentuan Layanan kami.</p>
+        </div>
+    </div>
+
+    <!-- Main App Layout -->
+    <div id="app-content" class="hidden-section">
+        <!-- Top Navigation -->
+        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+            <div class="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+                <span class="text-2xl font-black text-blue-600 tracking-tight">SocialHub</span>
+                <div class="flex items-center gap-4">
+                    <button class="text-xl text-slate-600"><i class="far fa-bell"></i></button>
+                    <div id="user-avatar" class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-sm"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Feed Section -->
+        <main class="max-w-2xl mx-auto p-4 space-y-6 pb-24">
+            
+            <!-- Create Post -->
+            <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex gap-4">
+                    <div id="post-avatar" class="w-12 h-12 rounded-full flex-shrink-0 bg-blue-100 flex items-center justify-center text-blue-600 font-bold"></div>
+                    <textarea id="post-content" placeholder="Apa yang sedang terjadi?" class="w-full py-2 bg-transparent border-none focus:ring-0 resize-none text-lg outline-none"></textarea>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                    <div class="flex gap-4 text-blue-600 text-xl">
+                        <button class="hover:bg-blue-50 p-2 rounded-full"><i class="far fa-image"></i></button>
+                        <button class="hover:bg-blue-50 p-2 rounded-full"><i class="far fa-smile"></i></button>
+                    </div>
+                    <button onclick="createPost()" class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition-all">
+                        Posting
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feed Container -->
+            <div id="feed-container" class="space-y-6">
+                <!-- Posts will appear here -->
+            </div>
+        </main>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 py-4 px-8 flex justify-between items-center z-50">
+            <button class="text-2xl text-blue-600"><i class="fas fa-home"></i></button>
+            <button class="text-2xl text-slate-400"><i class="fas fa-search"></i></button>
+            <button class="text-2xl text-slate-400"><i class="far fa-plus-square"></i></button>
+            <button class="text-2xl text-slate-400"><i class="far fa-user"></i></button>
+        </nav>
+    </div>
+
+    <script>
+        let currentUser = "";
+        const posts = [
+            {
+                user: "Budi Santoso",
+                content: "Baru saja bergabung dengan SocialHub! Antarmukanya sangat bersih dan cepat. 🚀",
+                likes: 12,
+                time: "2 jam yang lalu"
+            },
+            {
+                user: "Siti Aminah",
+                content: "Ada yang tahu tempat kopi enak di Jakarta Selatan? Lagi pengen banget nih. ☕️",
+                likes: 5,
+                time: "4 jam yang lalu"
+            }
+        ];
+
+        function handleLogin() {
+            const input = document.getElementById('username-input');
+            if (input.value.trim() === "") {
+                alert("Masukkan nama Anda!");
+                return;
+            }
+            currentUser = input.value;
+            document.getElementById('auth-overlay').classList.add('hidden-section');
+            document.getElementById('app-content').classList.remove('hidden-section');
+            
+            const initial = currentUser.charAt(0).toUpperCase();
+            document.getElementById('user-avatar').innerText = initial;
+            document.getElementById('post-avatar').innerText = initial;
+            
+            renderPosts();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = "";
+            
+            posts.forEach((post, index) => {
+                const postHTML = `
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 post-card">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+                                    ${post.user.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">${post.user}</h4>
+                                    <p class="text-xs text-slate-400">${post.time}</p>
+                                </div>
+                            </div>
+                            <button class="text-slate-400"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+                        <p class="text-slate-700 leading-relaxed mb-4">${post.content}</p>
+                        <div class="flex gap-6 border-t border-slate-50 pt-4">
+                            <button onclick="likePost(${index})" class="flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors">
+                                <i class="far fa-heart"></i>
+                                <span class="text-sm font-medium">${post.likes}</span>
+                            </button>
+                            <button class="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors">
+                                <i class="far fa-comment"></i>
+                                <span class="text-sm font-medium">Komentar</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += postHTML;
+            });
+        }
+
+        function createPost() {
+            const content = document.getElementById('post-content');
+            if (content.value.trim() === "") return;
+
+            const newPost = {
+                user: currentUser,
+                content: content.value,
+                likes: 0,
+                time: "Baru saja"
+            };
+
+            posts.unshift(newPost);
+            content.value = "";
+            renderPosts();
+        }
+
+        function likePost(index) {
+            posts[index].likes++;
+            renderPosts();
+        }
+    </script>
+</body>
+</html>
+```
+
+Saya telah menempatkan kembali isi file `socialhub_app.html` yang Anda berikan di atas. Jika Anda ingin saya:
+- Menambahkan penyimpanan (localStorage) agar postingan persist saat reload,
+- Menambah fitur komentar atau penghapusan posting,
+- Memperbaiki aksesibilitas atau optimasi tampilan mobile,
+atau ingin file dikemas ke repository, beri tahu feature mana yang mau ditambahkan dan saya akan perbarui filenya.
+
+## @AMINPAHRUDIN101
+
+Ya
+
+## Copilot
+
+Bagus — saya siap menambahkan fitur. Mau saya tambahkan yang mana dari opsi berikut (ketik nomor atau jelaskan):
+
+1) Simpan posting ke localStorage (post tetap ada setelah reload)  
+2) Fitur komentar pada setiap posting  
+3) Tombol hapus dan edit untuk posting Anda sendiri  
+4) Peningkatan aksesibilitas dan optimasi tampilan mobile  
+5) Semua fitur di atas
+
+Ketik pilihan (mis. `1` atau `1,2,3` atau `semua`) dan saya akan langsung perbarui file `socialhub_app.html`.
+
+## @AMINPAHRUDIN101
+
+Semua
+
+## Copilot
+
+``` name=socialhub_app.html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SocialHub Web App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+            --card-radius: 1.25rem;
+        }
+        html, body {
+            height: 100%;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        .post-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+        .post-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+        .hidden-section { display: none; }
+        .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        textarea { min-height: 44px; }
+        /* Keyboard focus visible */
+        :focus-visible { outline: 3px solid rgba(59,130,246,0.25); outline-offset: 2px; border-radius: .5rem; }
+        /* Make bottom nav slightly taller on mobile for safe area */
+        .bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem); }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Auth Overlay (Simulasi Login) -->
+    <div id="auth-overlay" class="fixed inset-0 z-[100] bg-white flex items-center justify-center px-6" aria-modal="true" role="dialog" aria-labelledby="auth-title">
+        <div class="max-w-md w-full text-center space-y-6">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-xl shadow-blue-200" aria-hidden="true">S</div>
+            <div>
+                <h1 id="auth-title" class="text-3xl font-bold">Selamat Datang</h1>
+                <p class="text-slate-500 mt-2">Masuk ke SocialHub untuk terhubung dengan teman.</p>
+            </div>
+            <div class="space-y-4">
+                <label for="username-input" class="sr-only">Nama Pengguna</label>
+                <input type="text" id="username-input" placeholder="Nama Pengguna" autocomplete="username" aria-label="Nama Pengguna" class="w-full px-6 py-4 bg-slate-100 rounded-2xl border-none focus:ring-2 focus:ring-blue-600 outline-none transition-all" />
+                <button id="login-btn" type="button" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                    Mulai Menjelajah
+                </button>
+            </div>
+            <p class="text-xs text-slate-400">Dengan masuk, Anda menyetujui Ketentuan Layanan kami.</p>
+        </div>
+    </div>
+
+    <!-- Main App Layout -->
+    <div id="app-content" class="hidden-section">
+        <!-- Top Navigation -->
+        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+            <div class="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+                <span class="text-2xl font-black text-blue-600 tracking-tight">SocialHub</span>
+                <div class="flex items-center gap-4">
+                    <button id="notif-btn" class="text-xl text-slate-600 p-2 rounded-full" aria-label="Notifikasi" title="Notifikasi">
+                        <i class="far fa-bell" aria-hidden="true"></i>
+                    </button>
+                    <div id="user-avatar" class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-sm" aria-hidden="true"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Feed Section -->
+        <main class="max-w-2xl mx-auto p-4 space-y-6 pb-28">
+            
+            <!-- Create Post -->
+            <div class="bg-white p-4 rounded-[var(--card-radius)] shadow-sm border border-slate-200" role="region" aria-labelledby="create-post-title">
+                <h2 id="create-post-title" class="sr-only">Buat Postingan</h2>
+                <div class="flex gap-4">
+                    <div id="post-avatar" class="w-12 h-12 rounded-full flex-shrink-0 bg-blue-100 flex items-center justify-center text-blue-600 font-bold" aria-hidden="true"></div>
+                    <div class="w-full">
+                        <label for="post-content" class="sr-only">Apa yang sedang terjadi?</label>
+                        <textarea id="post-content" placeholder="Apa yang sedang terjadi?" class="w-full py-2 bg-transparent border-none focus:ring-0 resize-none text-lg outline-none" aria-label="Tulis postingan"></textarea>
+                        <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="flex gap-3 text-blue-600 text-xl" role="group" aria-label="Tambahkan">
+                                <button id="add-image-btn" class="hover:bg-blue-50 p-2 rounded-full" aria-label="Tambah gambar" title="Tambah gambar"><i class="far fa-image" aria-hidden="true"></i></button>
+                                <button id="add-emoji-btn" class="hover:bg-blue-50 p-2 rounded-full" aria-label="Tambah emoji" title="Tambah emoji"><i class="far fa-smile" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="flex items-center justify-end gap-3">
+                                <button id="logout-btn" class="text-sm text-slate-500 hover:text-slate-700" aria-label="Keluar">Keluar</button>
+                                <button id="post-btn" type="button" class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-700 transition-all">
+                                    Posting
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed Container -->
+            <div id="feed-container" class="space-y-6" aria-live="polite" aria-relevant="additions removals">
+                <!-- Posts will appear here -->
+            </div>
+        </main>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav class="fixed bottom-0 w-full bg-white border-t border-slate-200 py-4 px-6 flex justify-between items-center z-50 bottom-nav" role="navigation" aria-label="Navigasi bawah">
+            <button class="text-2xl text-blue-600 p-2" aria-label="Beranda" title="Beranda"><i class="fas fa-home" aria-hidden="true"></i></button>
+            <button class="text-2xl text-slate-400 p-2" aria-label="Cari" title="Cari"><i class="fas fa-search" aria-hidden="true"></i></button>
+            <button id="new-post-shortcut" class="text-2xl text-slate-400 p-2" aria-label="Buat postingan" title="Buat postingan"><i class="far fa-plus-square" aria-hidden="true"></i></button>
+            <button class="text-2xl text-slate-400 p-2" aria-label="Profil" title="Profil"><i class="far fa-user" aria-hidden="true"></i></button>
+        </nav>
+    </div>
+
+    <script>
+        /******************************
+         * SocialHub - Single File App
+         * Fitur:
+         * - localStorage persistence
+         * - komentar per posting
+         * - edit & hapus untuk posting pengguna sendiri
+         * - optimisasi aksesibilitas & mobile
+         ******************************/
+
+        // Storage keys
+        const STORAGE_KEY_POSTS = 'socialhub_posts_v1';
+        const STORAGE_KEY_USER = 'socialhub_user_v1';
+
+        // App state
+        let currentUser = '';
+        let posts = [];
+
+        // DOM elements
+        const authOverlay = document.getElementById('auth-overlay');
+        const appContent = document.getElementById('app-content');
+        const usernameInput = document.getElementById('username-input');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const postContentEl = document.getElementById('post-content');
+        const postBtn = document.getElementById('post-btn');
+        const feedContainer = document.getElementById('feed-container');
+        const userAvatar = document.getElementById('user-avatar');
+        const postAvatar = document.getElementById('post-avatar');
+        const newPostShortcut = document.getElementById('new-post-shortcut');
+
+        // Utilities
+        function savePostsToStorage() {
+            localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(posts));
+        }
+        function loadPostsFromStorage() {
+            const raw = localStorage.getItem(STORAGE_KEY_POSTS);
+            try {
+                posts = raw ? JSON.parse(raw) : getInitialDemoPosts();
+            } catch (e) {
+                console.error('Gagal memparsing posts dari storage', e);
+                posts = getInitialDemoPosts();
+            }
+        }
+        function saveUserToStorage() {
+            localStorage.setItem(STORAGE_KEY_USER, currentUser);
+        }
+        function loadUserFromStorage() {
+            return localStorage.getItem(STORAGE_KEY_USER) || '';
+        }
+
+        function getInitialDemoPosts() {
+            // initial demo data only when no saved posts
+            return [
+                {
+                    id: generateId(),
+                    user: "Budi Santoso",
+                    content: "Baru saja bergabung dengan SocialHub! Antarmukanya sangat bersih dan cepat. 🚀",
+                    likes: 12,
+                    likedBy: [],
+                    comments: [
+                        { id: generateId(), user: "Siti Aminah", text: "Selamat datang, Budi!", time: new Date(Date.now() - 1000 * 60 * 60).toISOString() }
+                    ],
+                    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2 jam
+                },
+                {
+                    id: generateId(),
+                    user: "Siti Aminah",
+                    content: "Ada yang tahu tempat kopi enak di Jakarta Selatan? Lagi pengen banget nih. ☕️",
+                    likes: 5,
+                    likedBy: [],
+                    comments: [],
+                    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString() // 4 jam
+                }
+            ];
+        }
+
+        function generateId() {
+            return 'p_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+        }
+
+        // Simple HTML escape to prevent injection
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Relative time helper (very small/simple)
+        function relativeTime(iso) {
+            const diff = Date.now() - new Date(iso).getTime();
+            const s = Math.floor(diff / 1000);
+            if (s < 10) return 'Baru saja';
+            if (s < 60) return `${s} detik yang lalu`;
+            const m = Math.floor(s / 60);
+            if (m < 60) return `${m} menit yang lalu`;
+            const h = Math.floor(m / 60);
+            if (h < 24) return `${h} jam yang lalu`;
+            const d = Math.floor(h / 24);
+            return `${d} hari yang lalu`;
+        }
+
+        // Render
+        function renderPosts() {
+            // Sort newest first
+            posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            feedContainer.innerHTML = '';
+            posts.forEach(post => {
+                const isMine = post.user === currentUser;
+                const liked = post.likedBy && post.likedBy.includes(currentUser);
+                const commentsCount = (post.comments && post.comments.length) || 0;
+
+                const postEl = document.createElement('article');
+                postEl.className = 'bg-white p-6 rounded-[var(--card-radius)] shadow-sm border border-slate-200 post-card';
+                postEl.setAttribute('data-id', post.id);
+                postEl.setAttribute('role', 'article');
+                postEl.setAttribute('aria-labelledby', `post-title-${post.id}`);
+
+                postEl.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600" aria-hidden="true">
+                                ${escapeHtml(post.user.charAt(0) || '')}
+                            </div>
+                            <div>
+                                <h3 id="post-title-${post.id}" class="font-bold">${escapeHtml(post.user)}</h3>
+                                <p class="text-xs text-slate-400">${relativeTime(post.createdAt)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${isMine ? `
+                                <button class="text-sm text-slate-500 hover:text-slate-700 px-2 py-1 rounded-md" onclick="startEditPost('${post.id}')" aria-label="Edit postingan">Edit</button>
+                                <button class="text-sm text-red-500 hover:text-red-600 px-2 py-1 rounded-md" onclick="confirmDeletePost('${post.id}')" aria-label="Hapus postingan">Hapus</button>
+                            ` : ''}
+                            <button class="text-slate-400 p-2 rounded-full" aria-label="Menu postingan" title="Lainnya"><i class="fas fa-ellipsis-h" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="content-${post.id}" class="text-slate-700 leading-relaxed mb-4">${escapeHtml(post.content).replace(/\n/g, '<br/>')}</div>
+
+                    <div id="edit-area-${post.id}" class="mb-4 hidden-section">
+                        <label for="edit-input-${post.id}" class="sr-only">Edit konten</label>
+                        <textarea id="edit-input-${post.id}" class="w-full py-2 bg-slate-50 border border-slate-200 rounded-md resize-none p-3" aria-label="Edit konten">${escapeHtml(post.content)}</textarea>
+                        <div class="mt-2 flex gap-2 justify-end">
+                            <button class="px-3 py-2 rounded-md text-sm bg-slate-100" onclick="cancelEditPost('${post.id}')">Batal</button>
+                            <button class="px-3 py-2 rounded-md text-sm bg-blue-600 text-white" onclick="saveEditPost('${post.id}')">Simpan</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 border-t border-slate-50 pt-4 items-center">
+                        <button id="like-btn-${post.id}" class="flex items-center gap-2 ${liked ? 'text-red-500' : 'text-slate-500 hover:text-red-500'} transition-colors" onclick="toggleLike('${post.id}')" aria-pressed="${liked}" aria-label="Suka postingan">
+                            <i class="${liked ? 'fas' : 'far'} fa-heart" aria-hidden="true"></i>
+                            <span class="text-sm font-medium" id="like-count-${post.id}">${post.likes}</span>
+                        </button>
+                        <button class="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors" onclick="toggleComments('${post.id}')" aria-expanded="false" aria-controls="comments-${post.id}">
+                            <i class="far fa-comment" aria-hidden="true"></i>
+                            <span class="text-sm font-medium">${commentsCount ? commentsCount + ' komentar' : 'Komentar'}</span>
+                        </button>
+                    </div>
+
+                    <div id="comments-${post.id}" class="mt-4 hidden-section" aria-hidden="true">
+                        <div id="comments-list-${post.id}" class="space-y-3 mb-3">
+                            ${ (post.comments || []).map(c => `
+                                <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    <div class="flex justify-between items-start gap-3">
+                                        <div class="flex gap-3">
+                                            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-sm font-semibold text-slate-700">${escapeHtml((c.user || '').charAt(0) || '')}</div>
+                                            <div>
+                                                <div class="text-sm font-semibold">${escapeHtml(c.user)}</div>
+                                                <div class="text-xs text-slate-400">${relativeTime(c.time)}</div>
+                                            </div>
+                                        </div>
+                                        ${c.user === currentUser ? `<button class="text-xs text-red-500" onclick="deleteComment('${post.id}','${c.id}')" aria-label="Hapus komentar">Hapus</button>` : ''}
+                                    </div>
+                                    <p class="mt-2 text-slate-700">${escapeHtml(c.text).replace(/\n/g, '<br/>')}</p>
+                                </div>
+                            `).join('') }
+                        </div>
+
+                        <form onsubmit="event.preventDefault(); addComment('${post.id}')" class="flex gap-2 items-start">
+                            <label for="comment-input-${post.id}" class="sr-only">Tambahkan komentar</label>
+                            <textarea id="comment-input-${post.id}" class="flex-1 p-3 bg-white border border-slate-100 rounded-md resize-none" placeholder="Tulis komentar..." aria-label="Tulis komentar"></textarea>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-md" type="button" onclick="addComment('${post.id}')">Kirim</button>
+                        </form>
+                    </div>
+                `;
+
+                feedContainer.appendChild(postEl);
+
+                // autosize comment textarea & edit textarea
+                const editInput = document.getElementById(`edit-input-${post.id}`);
+                if (editInput) {
+                    editInput.addEventListener('input', e => autoSizeTextarea(e.target));
+                    autoSizeTextarea(editInput);
+                }
+                const commentInput = document.getElementById(`comment-input-${post.id}`);
+                if (commentInput) {
+                    commentInput.addEventListener('input', e => autoSizeTextarea(e.target));
+                }
+            });
+        }
+
+        // Autosize helper
+        function autoSizeTextarea(el) {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight) + 'px';
+        }
+
+        // Actions
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            post.likedBy = post.likedBy || [];
+            const idx = post.likedBy.indexOf(currentUser);
+            if (idx === -1) {
+                post.likedBy.push(currentUser);
+                post.likes = (post.likes || 0) + 1;
+            } else {
+                post.likedBy.splice(idx, 1);
+                post.likes = Math.max(0, (post.likes || 1) - 1);
+            }
+            savePostsToStorage();
+            renderPosts();
+        }
+
+        function toggleComments(postId) {
+            const commentsEl = document.getElementById(`comments-${postId}`);
+            if (!commentsEl) return;
+            const expanded = !commentsEl.classList.contains('hidden-section');
+            commentsEl.classList.toggle('hidden-section', expanded);
+            commentsEl.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+            // update button aria-expanded
+            const btn = document.querySelector(`[data-id="${postId}"]`) || document.querySelector(`[data-id="${postId}"] button[aria-expanded]`);
+            // find the toggle button more robustly
+            const toggleBtn = Array.from(document.querySelectorAll(`#feed-container article button`)).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`toggleComments('${postId}')`));
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', String(!expanded));
+        }
+
+        function addComment(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            const input = document.getElementById(`comment-input-${postId}`);
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            const comment = { id: generateId(), user: currentUser, text, time: new Date().toISOString() };
+            post.comments = post.comments || [];
+            post.comments.push(comment);
+            savePostsToStorage();
+            input.value = '';
+            renderPosts();
+            // open comments after adding
+            requestAnimationFrame(() => {
+                const commentsEl = document.getElementById(`comments-${postId}`);
+                if (commentsEl && commentsEl.classList.contains('hidden-section')) toggleComments(postId);
+            });
+        }
+
+        function deleteComment(postId, commentId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            const idx = (post.comments || []).findIndex(c => c.id === commentId && c.user === currentUser);
+            if (idx === -1) {
+                alert('Komentar hanya bisa dihapus oleh penulisnya.');
+                return;
+            }
+            if (!confirm('Hapus komentar ini?')) return;
+            post.comments.splice(idx, 1);
+            savePostsToStorage();
+            renderPosts();
+        }
+
+        function confirmDeletePost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            if (post.user !== currentUser) {
+                alert('Anda hanya dapat menghapus postingan Anda sendiri.');
+                return;
+            }
+            if (!confirm('Apakah Anda yakin ingin menghapus postingan ini?')) return;
+            posts = posts.filter(p => p.id !== postId);
+            savePostsToStorage();
+            renderPosts();
+        }
+
+        function startEditPost(postId) {
+            const contentEl = document.getElementById(`content-${postId}`);
+            const editArea = document.getElementById(`edit-area-${postId}`);
+            if (!editArea || !contentEl) return;
+            contentEl.classList.add('hidden-section');
+            editArea.classList.remove('hidden-section');
+            // autosize edit textarea
+            const editInput = document.getElementById(`edit-input-${postId}`);
+            if (editInput) {
+                autoSizeTextarea(editInput);
+                editInput.focus();
+                // move caret to end
+                editInput.selectionStart = editInput.selectionEnd = editInput.value.length;
+            }
+            // close other edit areas
+            Array.from(document.querySelectorAll('[id^="edit-area-"]')).forEach(el => {
+                if (el.id !== `edit-area-${postId}`) el.classList.add('hidden-section');
+            });
+        }
+
+        function cancelEditPost(postId) {
+            const contentEl = document.getElementById(`content-${postId}`);
+            const editArea = document.getElementById(`edit-area-${postId}`);
+            if (!editArea || !contentEl) return;
+            editArea.classList.add('hidden-section');
+            contentEl.classList.remove('hidden-section');
+        }
+
+        function saveEditPost(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            const editInput = document.getElementById(`edit-input-${postId}`);
+            if (!editInput) return;
+            const newText = editInput.value.trim();
+            if (newText === '') {
+                alert('Konten tidak boleh kosong.');
+                return;
+            }
+            post.content = newText;
+            // update createdAt to now? better keep original createdAt but we can store editedAt if needed (not required).
+            savePostsToStorage();
+            renderPosts();
+        }
+
+        // Create post
+        function createPost() {
+            const text = postContentEl.value.trim();
+            if (!text) return;
+            const newPost = {
+                id: generateId(),
+                user: currentUser,
+                content: text,
+                likes: 0,
+                likedBy: [],
+                comments: [],
+                createdAt: new Date().toISOString()
+            };
+            posts.unshift(newPost);
+            savePostsToStorage();
+            postContentEl.value = '';
+            autoSizeTextarea(postContentEl);
+            renderPosts();
+        }
+
+        // Login & logout
+        function handleLoginAction() {
+            const value = usernameInput.value.trim();
+            if (!value) {
+                usernameInput.focus();
+                alert('Masukkan nama Anda!');
+                return;
+            }
+            currentUser = value;
+            saveUserToStorage();
+            postLoginInit();
+        }
+
+        function postLoginInit() {
+            authOverlay.classList.add('hidden-section');
+            appContent.classList.remove('hidden-section');
+            const initial = currentUser.charAt(0).toUpperCase();
+            userAvatar.innerText = initial;
+            postAvatar.innerText = initial;
+            // ensure posts loaded
+            loadPostsFromStorage();
+            renderPosts();
+        }
+
+        function handleLogout() {
+            if (!confirm('Keluar dari SocialHub?')) return;
+            currentUser = '';
+            localStorage.removeItem(STORAGE_KEY_USER);
+            // show auth again
+            authOverlay.classList.remove('hidden-section');
+            appContent.classList.add('hidden-section');
+            usernameInput.value = '';
+            usernameInput.focus();
+        }
+
+        // Keyboard shortcuts & small improvements
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter or Cmd+Enter => post
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const el = document.activeElement;
+                if (el === postContentEl) {
+                    createPost();
+                } else if (el && el.id && el.id.startsWith('edit-input-')) {
+                    // save edit for focused edit textarea
+                    const id = el.id.replace('edit-input-', '');
+                    saveEditPost(id);
+                }
+            }
+        });
+
+        // Bind events
+        loginBtn.addEventListener('click', handleLoginAction);
+        postBtn.addEventListener('click', createPost);
+        logoutBtn && logoutBtn.addEventListener('click', handleLogout);
+        newPostShortcut.addEventListener('click', () => {
+            postContentEl.focus();
+        });
+
+        // autosize main post textarea
+        postContentEl.addEventListener('input', e => autoSizeTextarea(e.target));
+        autoSizeTextarea(postContentEl);
+
+        // On load: check if user exists in storage
+        (function init() {
+            loadPostsFromStorage();
+            const storedUser = loadUserFromStorage();
+            if (storedUser) {
+                currentUser = storedUser;
+                usernameInput.value = storedUser;
+                postLoginInit();
+            } else {
+                // show login
+                authOverlay.classList.remove('hidden-section');
+                appContent.classList.add('hidden-section');
+                usernameInput.focus();
+            }
+        })();
+
+        // Expose some functions to window so inline onclick handlers work
+        window.toggleLike = toggleLike;
+        window.toggleComments = toggleComments;
+        window.addComment = addComment;
+        window.confirmDeletePost = confirmDeletePost;
+        window.startEditPost = startEditPost;
+        window.cancelEditPost = cancelEditPost;
+        window.saveEditPost = saveEditPost;
+        window.deleteComment = deleteComment;
+        window.createPost = createPost;
+    </script>
+</body>
+</html>
+```
